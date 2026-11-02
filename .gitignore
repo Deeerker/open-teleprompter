@@ -1,0 +1,18 @@
+.DS_Store
+build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
+
+# Claude Code
+.claude/worktrees/
+
+# Node
+node_modules/
