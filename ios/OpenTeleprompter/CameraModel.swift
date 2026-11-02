@@ -191,4 +191,25 @@ final class CameraModel {
     func pinch(scale: CGFloat) {
         controller.pinch(scale: scale)
     }
+
+    #if DEBUG
+    private(set) var isScreenshotMode = false
+
+    func startScreenshotMode(_ shot: String) async {
+        isScreenshotMode = true
+        prompter.text = ScreenshotMode.script
+        prompter.fontSize = 32
+        prompter.speed = 20
+        info = CameraInfo(position: .back, zoomPresets: [0.5, 1, 3], hasTorch: true)
+        status = .running
+        guard shot == "recording" else { return }
+        // Wait for the text to be measured, then show it mid-scroll with the timer running.
+        try? await Task.sleep(for: .milliseconds(600))
+        prompter.drag(translation: -150)
+        prompter.endDrag()
+        isRecording = true
+        recordingStartedAt = Date.now.addingTimeInterval(-14)
+        prompter.play()
+    }
+    #endif
 }

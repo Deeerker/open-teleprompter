@@ -28,7 +28,16 @@ struct CameraScreen: View {
         }
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
-        .task { await model.setUp() }
+        .task {
+            #if DEBUG
+            if let shot = ScreenshotMode.shot {
+                await model.startScreenshotMode(shot)
+                showEditor = shot == "editor"
+                return
+            }
+            #endif
+            await model.setUp()
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
                 model.appDidEnterBackground()
@@ -90,18 +99,7 @@ struct CameraScreen: View {
         GeometryReader { geometry in
             let width = geometry.size.width
             let height = min(geometry.size.height, width * 16 / 9)
-            CameraPreview(
-                session: model.controller.session,
-                configurationID: model.configurationID,
-                onFocus: { viewPoint, devicePoint in
-                    model.focus(at: devicePoint)
-                    focusPoint = viewPoint
-                    focusID += 1
-                },
-                onPinchBegan: model.beginPinch,
-                onPinch: model.pinch(scale:),
-                onHardwareButton: model.toggleRecording
-            )
+            cameraFeed
             .overlay {
                 if let focusPoint {
                     FocusSquare()
@@ -118,6 +116,34 @@ struct CameraScreen: View {
             try? await Task.sleep(for: .seconds(1.5))
             withAnimation(.easeOut(duration: 0.3)) { focusPoint = nil }
         }
+    }
+
+    @ViewBuilder
+    private var cameraFeed: some View {
+        #if DEBUG
+        if model.isScreenshotMode {
+            ScreenshotBackground()
+        } else {
+            livePreview
+        }
+        #else
+        livePreview
+        #endif
+    }
+
+    private var livePreview: some View {
+        CameraPreview(
+            session: model.controller.session,
+            configurationID: model.configurationID,
+            onFocus: { viewPoint, devicePoint in
+                model.focus(at: devicePoint)
+                focusPoint = viewPoint
+                focusID += 1
+            },
+            onPinchBegan: model.beginPinch,
+            onPinch: model.pinch(scale:),
+            onHardwareButton: model.toggleRecording
+        )
     }
 
     private var topBar: some View {

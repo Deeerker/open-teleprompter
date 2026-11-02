@@ -40,9 +40,9 @@ struct PrompterOverlay: View {
                     }
                 }
                 .offset(y: -prompter.offset(at: context.date))
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .frame(height: height)
+        // Top-aligned: a script taller than the box would otherwise be centered in it.
+        .frame(maxWidth: .infinity, minHeight: height, maxHeight: height, alignment: .top)
         .clipped()
         .mask {
             LinearGradient(
