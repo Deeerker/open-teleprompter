@@ -1,0 +1,19 @@
+name: Build IPA
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compilar código fuente
+        run: |
+          cd ios
+          xcodebuild clean build -project OpenTeleprompter.xcodeproj -scheme OpenTeleprompter -destination "generic/platform=iOS" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO -derivedDataPath build
+          mkdir Payload
+          cp -R build/Build/Products/Debug-iphoneos/OpenTeleprompter.app Payload/
+          zip -r OpenTeleprompter.ipa Payload
+      - name: Exportar Artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenTeleprompter-App
+          path: ios/OpenTeleprompter.ipa
